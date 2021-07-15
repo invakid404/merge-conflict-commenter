@@ -1,17 +1,19 @@
 import * as core from '@actions/core';
 
-import { wait } from './wait';
+import { getPullRequests } from './prs';
+import { sleep } from './utils';
 
 async function run(): Promise<void> {
   try {
-    const ms: string = core.getInput('milliseconds');
-    core.debug(`Waiting ${ms} milliseconds ...`); // debug is only output if you set the secret `ACTIONS_RUNNER_DEBUG` to true
+    for (let i = 0; i < 5; ++i) {
+      const pullRequests = await getPullRequests();
 
-    core.debug(new Date().toTimeString());
-    await wait(parseInt(ms, 10));
-    core.debug(new Date().toTimeString());
+      pullRequests.forEach(({ number, mergeable }) => {
+        core.info(`${number} -> ${mergeable}`);
+      });
 
-    core.setOutput('time', new Date().toTimeString());
+      await sleep(1000);
+    }
   } catch (error) {
     core.setFailed(error.message);
   }
