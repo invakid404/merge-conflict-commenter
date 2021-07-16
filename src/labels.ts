@@ -95,18 +95,18 @@ const doLabelMutation = async (
   label: Label,
   mutationType: string,
 ): Promise<void> => {
-  const params = {
-    __args: {
-      input: {
-        labelIds: [label.id],
-        labelableId: target.id,
+  const request = {
+    mutation: {
+      [mutationType]: {
+        __args: {
+          input: {
+            labelIds: [label.id],
+            labelableId: target.id,
+          },
+        },
+        clientMutationId: true,
       },
     },
-    clientMutationId: true,
-  };
-
-  const request = {
-    mutation: Object.fromEntries([[mutationType, params]]),
   };
 
   await octokit(jsonToGraphQLQuery(request));
