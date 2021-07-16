@@ -1876,17 +1876,18 @@ const removeLabel = async (target, label) => {
 };
 exports.removeLabel = removeLabel;
 const doLabelMutation = async (target, label, mutationType) => {
-    const params = {
-        __args: {
-            input: {
-                labelIds: [label.id],
-                labelableId: target.id,
+    const request = {
+        mutation: {
+            [mutationType]: {
+                __args: {
+                    input: {
+                        labelIds: [label.id],
+                        labelableId: target.id,
+                    },
+                },
+                clientMutationId: true,
             },
         },
-        clientMutationId: true,
-    };
-    const request = {
-        mutation: Object.fromEntries([[mutationType, params]]),
     };
     await octokit_1.octokit(json_to_graphql_query_1.jsonToGraphQLQuery(request));
 };
