@@ -1,4 +1,3 @@
-import * as core from '@actions/core';
 import { EnumType, jsonToGraphQLQuery } from 'json-to-graphql-query';
 
 import { Context } from './context';
@@ -27,11 +26,18 @@ export const getPullRequests = async (
             states: new EnumType(PullRequestState.Open),
             ...(cursor && { after: cursor }),
           },
-          edges: {
-            node: {
-              id: true,
-              number: true,
-              mergeable: true,
+          nodes: {
+            id: true,
+            number: true,
+            mergeable: true,
+            labels: {
+              __args: {
+                first: 100,
+              },
+              nodes: {
+                id: true,
+                name: true,
+              },
             },
           },
           pageInfo: {
@@ -46,19 +52,13 @@ export const getPullRequests = async (
   const {
     repository: {
       pullRequests: {
-        edges,
+        nodes,
         pageInfo: { hasNextPage, endCursor },
       },
     },
   }: { repository: Repository } = await octokit(jsonToGraphQLQuery(request));
 
-  core.info(JSON.stringify(edges, null, 2));
-
-  const results =
-    edges
-      ?.filter(notEmpty)
-      .map(({ node }) => node)
-      .filter(notEmpty) ?? [];
+  const results = nodes?.filter(notEmpty) ?? [];
 
   if (hasNextPage) {
     const recurse = await getPullRequests(endCursor);

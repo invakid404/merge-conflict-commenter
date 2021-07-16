@@ -1812,8 +1812,10 @@ function run() {
         try {
             for (let i = 0; i < 5; ++i) {
                 const pullRequests = yield prs_1.getPullRequests();
-                pullRequests.forEach(({ number, mergeable }) => {
-                    core.info(`${number} -> ${mergeable}`);
+                pullRequests.forEach(({ number, mergeable, labels }) => {
+                    var _a;
+                    const labelInfo = (_a = labels === null || labels === void 0 ? void 0 : labels.nodes) === null || _a === void 0 ? void 0 : _a.filter(utils_1.notEmpty).map(({ name }) => name).join(' ');
+                    core.info(`${number} (${labelInfo}) -> ${mergeable}`);
                 });
                 yield utils_1.sleep(1000);
             }
@@ -1851,25 +1853,6 @@ exports.octokit = graphql_1.graphql.defaults({
 
 "use strict";
 
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -1881,7 +1864,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getPullRequests = void 0;
-const core = __importStar(__webpack_require__(2186));
 const json_to_graphql_query_1 = __webpack_require__(6450);
 const context_1 = __webpack_require__(3842);
 const graphql_1 = __webpack_require__(9088);
@@ -1898,11 +1880,18 @@ const getPullRequests = (cursor) => __awaiter(void 0, void 0, void 0, function* 
                 },
                 pullRequests: {
                     __args: Object.assign({ first: 100, states: new json_to_graphql_query_1.EnumType(graphql_1.PullRequestState.Open) }, (cursor && { after: cursor })),
-                    edges: {
-                        node: {
-                            id: true,
-                            number: true,
-                            mergeable: true,
+                    nodes: {
+                        id: true,
+                        number: true,
+                        mergeable: true,
+                        labels: {
+                            __args: {
+                                first: 100,
+                            },
+                            nodes: {
+                                id: true,
+                                name: true,
+                            },
                         },
                     },
                     pageInfo: {
@@ -1913,9 +1902,8 @@ const getPullRequests = (cursor) => __awaiter(void 0, void 0, void 0, function* 
             },
         },
     };
-    const { repository: { pullRequests: { edges, pageInfo: { hasNextPage, endCursor }, }, }, } = yield octokit_1.octokit(json_to_graphql_query_1.jsonToGraphQLQuery(request));
-    core.info(JSON.stringify(edges, null, 2));
-    const results = (_a = edges === null || edges === void 0 ? void 0 : edges.filter(utils_1.notEmpty).map(({ node }) => node).filter(utils_1.notEmpty)) !== null && _a !== void 0 ? _a : [];
+    const { repository: { pullRequests: { nodes, pageInfo: { hasNextPage, endCursor }, }, }, } = yield octokit_1.octokit(json_to_graphql_query_1.jsonToGraphQLQuery(request));
+    const results = (_a = nodes === null || nodes === void 0 ? void 0 : nodes.filter(utils_1.notEmpty)) !== null && _a !== void 0 ? _a : [];
     if (hasNextPage) {
         const recurse = yield exports.getPullRequests(endCursor);
         results.push(...recurse);
