@@ -7,4 +7,5 @@ export const Context = {
   attempts: Number(core.getInput('attempts')),
   sleepMs: Number(core.getInput('sleepMs')),
   dirtyLabel: core.getInput('dirtyLabel', { required: true }),
+  message: core.getInput('message', { required: true }),
 };

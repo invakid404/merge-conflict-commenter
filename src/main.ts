@@ -1,6 +1,7 @@
 import * as core from '@actions/core';
 import { partition } from 'lodash';
 
+import { addComment } from './comments';
 import { Context } from './context';
 import { addLabelByName, removeLabelByName } from './labels';
 import { hasLabel, isPullRequestDirty, tryGetPullRequests } from './prs';
@@ -19,6 +20,7 @@ async function run(): Promise<void> {
         .filter((pr) => !hasLabel(pr, Context.dirtyLabel))
         .map(async (pr) => {
           await addLabelByName(pr, Context.dirtyLabel);
+          await addComment(pr);
         }),
     );
 

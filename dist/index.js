@@ -1,6 +1,37 @@
 require('./sourcemap-register.js');/******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
+/***/ 1910:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.addComment = void 0;
+const json_to_graphql_query_1 = __nccwpck_require__(6450);
+const context_1 = __nccwpck_require__(3842);
+const octokit_1 = __nccwpck_require__(3258);
+const addComment = async ({ id }, body = context_1.Context.message) => {
+    const request = {
+        mutation: {
+            addComment: {
+                __args: {
+                    input: {
+                        subjectId: id,
+                        body,
+                    },
+                },
+                clientMutationId: true,
+            },
+        },
+    };
+    await octokit_1.octokit(json_to_graphql_query_1.jsonToGraphQLQuery(request));
+};
+exports.addComment = addComment;
+
+
+/***/ }),
+
 /***/ 3842:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -35,6 +66,7 @@ exports.Context = {
     attempts: Number(core.getInput('attempts')),
     sleepMs: Number(core.getInput('sleepMs')),
     dirtyLabel: core.getInput('dirtyLabel', { required: true }),
+    message: core.getInput('message', { required: true }),
 };
 
 
@@ -1889,6 +1921,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const lodash_1 = __nccwpck_require__(250);
+const comments_1 = __nccwpck_require__(1910);
 const context_1 = __nccwpck_require__(3842);
 const labels_1 = __nccwpck_require__(3579);
 const prs_1 = __nccwpck_require__(8941);
@@ -1900,6 +1933,7 @@ async function run() {
             .filter((pr) => !prs_1.hasLabel(pr, context_1.Context.dirtyLabel))
             .map(async (pr) => {
             await labels_1.addLabelByName(pr, context_1.Context.dirtyLabel);
+            await comments_1.addComment(pr);
         }));
         await Promise.all(cleanPullRequests
             .filter((pr) => prs_1.hasLabel(pr, context_1.Context.dirtyLabel))
