@@ -1774,26 +1774,17 @@ var VerifiableDomainOrderField;
 /***/ }),
 
 /***/ 3579:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 "use strict";
 
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.addLabel = exports.addLabelByName = exports.getLabelByName = exports.getAllLabelsByName = void 0;
+exports.removeLabel = exports.removeLabelByName = exports.addLabel = exports.addLabelByName = exports.getLabelByName = exports.getAllLabelsByName = void 0;
 const json_to_graphql_query_1 = __nccwpck_require__(6450);
 const context_1 = __nccwpck_require__(3842);
 const octokit_1 = __nccwpck_require__(3258);
 const utils_1 = __nccwpck_require__(918);
-const getAllLabelsByName = (labelName) => __awaiter(void 0, void 0, void 0, function* () {
+const getAllLabelsByName = async (labelName) => {
     var _a, _b;
     const request = {
         query: {
@@ -1815,44 +1806,58 @@ const getAllLabelsByName = (labelName) => __awaiter(void 0, void 0, void 0, func
             },
         },
     };
-    const { repository: { labels }, } = yield octokit_1.octokit(json_to_graphql_query_1.jsonToGraphQLQuery(request));
+    const { repository: { labels }, } = await octokit_1.octokit(json_to_graphql_query_1.jsonToGraphQLQuery(request));
     return (_b = (_a = labels === null || labels === void 0 ? void 0 : labels.nodes) === null || _a === void 0 ? void 0 : _a.filter(utils_1.notEmpty)) !== null && _b !== void 0 ? _b : [];
-});
+};
 exports.getAllLabelsByName = getAllLabelsByName;
 const cachedLabels = {};
-const getLabelByName = (labelName) => __awaiter(void 0, void 0, void 0, function* () {
+const getLabelByName = async (labelName) => {
     if (cachedLabels.hasOwnProperty(labelName)) {
         return cachedLabels[labelName];
     }
-    const allLabels = yield exports.getAllLabelsByName(labelName);
+    const allLabels = await exports.getAllLabelsByName(labelName);
     return (cachedLabels[labelName] = allLabels.find(({ name }) => name === labelName));
-});
+};
 exports.getLabelByName = getLabelByName;
-const addLabelByName = (target, labelName) => __awaiter(void 0, void 0, void 0, function* () {
-    const label = yield exports.getLabelByName(labelName);
+const addLabelByName = async (target, labelName) => {
+    const label = await exports.getLabelByName(labelName);
     if (!label) {
         return;
     }
-    yield exports.addLabel(target, label);
-});
+    await exports.addLabel(target, label);
+};
 exports.addLabelByName = addLabelByName;
-const addLabel = (target, label) => __awaiter(void 0, void 0, void 0, function* () {
-    const request = {
-        mutation: {
-            addLabelsToLabelable: {
-                __args: {
-                    input: {
-                        labelIds: [label.id],
-                        labelableId: target.id,
-                    },
-                },
-                clientMutationId: true,
+const addLabel = async (target, label) => {
+    await doLabelMutation(target, label, 'addLabelsToLabelable');
+};
+exports.addLabel = addLabel;
+const removeLabelByName = async (target, labelName) => {
+    const label = await exports.getLabelByName(labelName);
+    if (!label) {
+        return;
+    }
+    await exports.removeLabel(target, label);
+};
+exports.removeLabelByName = removeLabelByName;
+const removeLabel = async (target, label) => {
+    await doLabelMutation(target, label, 'removeLabelsFromLabelable');
+};
+exports.removeLabel = removeLabel;
+const doLabelMutation = async (target, label, mutationType) => {
+    const params = {
+        __args: {
+            input: {
+                labelIds: [label.id],
+                labelableId: target.id,
             },
         },
+        clientMutationId: true,
     };
-    yield octokit_1.octokit(json_to_graphql_query_1.jsonToGraphQLQuery(request));
-});
-exports.addLabel = addLabel;
+    const request = {
+        mutation: Object.fromEntries([[mutationType, params]]),
+    };
+    await octokit_1.octokit(json_to_graphql_query_1.jsonToGraphQLQuery(request));
+};
 
 
 /***/ }),
@@ -1881,36 +1886,30 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const lodash_1 = __nccwpck_require__(250);
 const context_1 = __nccwpck_require__(3842);
 const labels_1 = __nccwpck_require__(3579);
 const prs_1 = __nccwpck_require__(8941);
-function run() {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            const pullRequests = yield prs_1.tryGetPullRequests();
-            const [dirtyPullRequests, _cleanPullRequests] = lodash_1.partition(pullRequests, prs_1.isPullRequestDirty);
-            yield Promise.all(dirtyPullRequests
-                .filter((pr) => !prs_1.hasLabel(pr, context_1.Context.dirtyLabel))
-                .map((pr) => __awaiter(this, void 0, void 0, function* () {
-                yield labels_1.addLabelByName(pr, context_1.Context.dirtyLabel);
-            })));
-        }
-        catch (error) {
-            core.setFailed(error.message);
-        }
-    });
+async function run() {
+    try {
+        const pullRequests = await prs_1.tryGetPullRequests();
+        const [dirtyPullRequests, cleanPullRequests] = lodash_1.partition(pullRequests, prs_1.isPullRequestDirty);
+        await Promise.all(dirtyPullRequests
+            .filter((pr) => !prs_1.hasLabel(pr, context_1.Context.dirtyLabel))
+            .map(async (pr) => {
+            await labels_1.addLabelByName(pr, context_1.Context.dirtyLabel);
+        }));
+        await Promise.all(cleanPullRequests
+            .filter((pr) => prs_1.hasLabel(pr, context_1.Context.dirtyLabel))
+            .map(async (pr) => {
+            await labels_1.removeLabelByName(pr, context_1.Context.dirtyLabel);
+        }));
+    }
+    catch (error) {
+        core.setFailed(error.message);
+    }
 }
 run();
 
@@ -1936,19 +1935,10 @@ exports.octokit = graphql_1.graphql.defaults({
 /***/ }),
 
 /***/ 8941:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 "use strict";
 
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.hasLabel = exports.isPullRequestDirty = exports.tryGetPullRequests = exports.getPullRequests = void 0;
 const json_to_graphql_query_1 = __nccwpck_require__(6450);
@@ -1956,7 +1946,7 @@ const context_1 = __nccwpck_require__(3842);
 const graphql_1 = __nccwpck_require__(9088);
 const octokit_1 = __nccwpck_require__(3258);
 const utils_1 = __nccwpck_require__(918);
-const getPullRequests = (cursor) => __awaiter(void 0, void 0, void 0, function* () {
+const getPullRequests = async (cursor) => {
     var _a;
     const request = {
         query: {
@@ -1966,7 +1956,11 @@ const getPullRequests = (cursor) => __awaiter(void 0, void 0, void 0, function* 
                     name: context_1.Context.repo.repo,
                 },
                 pullRequests: {
-                    __args: Object.assign({ first: 100, states: new json_to_graphql_query_1.EnumType(graphql_1.PullRequestState.Open) }, (cursor && { after: cursor })),
+                    __args: {
+                        first: 100,
+                        states: new json_to_graphql_query_1.EnumType(graphql_1.PullRequestState.Open),
+                        ...(cursor && { after: cursor }),
+                    },
                     nodes: {
                         id: true,
                         number: true,
@@ -1989,27 +1983,27 @@ const getPullRequests = (cursor) => __awaiter(void 0, void 0, void 0, function* 
             },
         },
     };
-    const { repository: { pullRequests: { nodes, pageInfo: { hasNextPage, endCursor }, }, }, } = yield octokit_1.octokit(json_to_graphql_query_1.jsonToGraphQLQuery(request));
+    const { repository: { pullRequests: { nodes, pageInfo: { hasNextPage, endCursor }, }, }, } = await octokit_1.octokit(json_to_graphql_query_1.jsonToGraphQLQuery(request));
     const results = (_a = nodes === null || nodes === void 0 ? void 0 : nodes.filter(utils_1.notEmpty)) !== null && _a !== void 0 ? _a : [];
     if (hasNextPage) {
-        const recurse = yield exports.getPullRequests(endCursor);
+        const recurse = await exports.getPullRequests(endCursor);
         results.push(...recurse);
     }
     return results;
-});
+};
 exports.getPullRequests = getPullRequests;
-const tryGetPullRequests = (attempts = context_1.Context.attempts, sleepMs = context_1.Context.sleepMs) => __awaiter(void 0, void 0, void 0, function* () {
+const tryGetPullRequests = async (attempts = context_1.Context.attempts, sleepMs = context_1.Context.sleepMs) => {
     let pullRequests = [];
     for (let attempt = 1; attempt <= attempts; ++attempt) {
-        pullRequests = yield exports.getPullRequests();
+        pullRequests = await exports.getPullRequests();
         const hasUnknowns = pullRequests.some((pr) => isPullRequestBad(pr));
         if (!hasUnknowns) {
             break;
         }
-        yield utils_1.sleep(sleepMs);
+        await utils_1.sleep(sleepMs);
     }
     return pullRequests.filter((pr) => !isPullRequestBad(pr));
-});
+};
 exports.tryGetPullRequests = tryGetPullRequests;
 const isPullRequestBad = ({ mergeable }) => mergeable === graphql_1.MergeableState.Unknown;
 const isPullRequestDirty = ({ mergeable }) => mergeable === graphql_1.MergeableState.Conflicting;
@@ -2024,26 +2018,17 @@ exports.hasLabel = hasLabel;
 /***/ }),
 
 /***/ 918:
-/***/ (function(__unused_webpack_module, exports) {
+/***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
 
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.sleep = exports.notEmpty = void 0;
 const notEmpty = (value) => {
     return value !== null && value !== undefined;
 };
 exports.notEmpty = notEmpty;
-const sleep = (ms) => __awaiter(void 0, void 0, void 0, function* () { return new Promise((resolve) => setTimeout(resolve, ms)); });
+const sleep = async (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 exports.sleep = sleep;
 
 

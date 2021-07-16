@@ -68,18 +68,45 @@ export const addLabel = async (
   target: Node & Labelable,
   label: Label,
 ): Promise<void> => {
-  const request = {
-    mutation: {
-      addLabelsToLabelable: {
-        __args: {
-          input: {
-            labelIds: [label.id],
-            labelableId: target.id,
-          },
-        },
-        clientMutationId: true,
+  await doLabelMutation(target, label, 'addLabelsToLabelable');
+};
+
+export const removeLabelByName = async (
+  target: Node & Labelable,
+  labelName: string,
+): Promise<void> => {
+  const label = await getLabelByName(labelName);
+  if (!label) {
+    return;
+  }
+
+  await removeLabel(target, label);
+};
+
+export const removeLabel = async (
+  target: Node & Labelable,
+  label: Label,
+): Promise<void> => {
+  await doLabelMutation(target, label, 'removeLabelsFromLabelable');
+};
+
+const doLabelMutation = async (
+  target: Node & Labelable,
+  label: Label,
+  mutationType: string,
+): Promise<void> => {
+  const params = {
+    __args: {
+      input: {
+        labelIds: [label.id],
+        labelableId: target.id,
       },
     },
+    clientMutationId: true,
+  };
+
+  const request = {
+    mutation: Object.fromEntries([[mutationType, params]]),
   };
 
   await octokit(jsonToGraphQLQuery(request));
