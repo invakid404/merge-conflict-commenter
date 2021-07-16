@@ -28,10 +28,13 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Context = void 0;
+const core = __importStar(__webpack_require__(2186));
 const github = __importStar(__webpack_require__(5438));
 exports.Context = {
     token: process.env.GITHUB_TOKEN,
     repo: github.context.repo,
+    attempts: Number(core.getInput('attempts')),
+    sleepMs: Number(core.getInput('sleepMs')),
 };
 
 
@@ -1810,15 +1813,12 @@ const utils_1 = __webpack_require__(918);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            for (let i = 0; i < 5; ++i) {
-                const pullRequests = yield prs_1.getPullRequests();
-                pullRequests.forEach(({ number, mergeable, labels }) => {
-                    var _a;
-                    const labelInfo = (_a = labels === null || labels === void 0 ? void 0 : labels.nodes) === null || _a === void 0 ? void 0 : _a.filter(utils_1.notEmpty).map(({ name }) => name).join(' ');
-                    core.info(`${number} (${labelInfo}) -> ${mergeable}`);
-                });
-                yield utils_1.sleep(1000);
-            }
+            const pullRequests = yield prs_1.tryGetPullRequests();
+            pullRequests.forEach(({ number, mergeable, labels }) => {
+                var _a;
+                const labelInfo = (_a = labels === null || labels === void 0 ? void 0 : labels.nodes) === null || _a === void 0 ? void 0 : _a.filter(utils_1.notEmpty).map(({ name }) => name).join(' ');
+                core.info(`${number} (${labelInfo}) -> ${mergeable}`);
+            });
         }
         catch (error) {
             core.setFailed(error.message);
@@ -1863,7 +1863,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getPullRequests = void 0;
+exports.tryGetPullRequests = exports.getPullRequests = void 0;
 const json_to_graphql_query_1 = __webpack_require__(6450);
 const context_1 = __webpack_require__(3842);
 const graphql_1 = __webpack_require__(9088);
@@ -1911,6 +1911,20 @@ const getPullRequests = (cursor) => __awaiter(void 0, void 0, void 0, function* 
     return results;
 });
 exports.getPullRequests = getPullRequests;
+const tryGetPullRequests = (attempts = context_1.Context.attempts, sleepMs = context_1.Context.sleepMs) => __awaiter(void 0, void 0, void 0, function* () {
+    let pullRequests = [];
+    for (let attempt = 1; attempt <= attempts; ++attempt) {
+        pullRequests = yield exports.getPullRequests();
+        const hasUnknowns = pullRequests.some((pr) => isPullRequestBad(pr));
+        if (!hasUnknowns) {
+            break;
+        }
+        yield utils_1.sleep(sleepMs);
+    }
+    return pullRequests.filter((pr) => !isPullRequestBad(pr));
+});
+exports.tryGetPullRequests = tryGetPullRequests;
+const isPullRequestBad = ({ mergeable }) => mergeable === graphql_1.MergeableState.Unknown;
 
 
 /***/ }),

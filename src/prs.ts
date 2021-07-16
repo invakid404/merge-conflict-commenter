@@ -3,12 +3,13 @@ import { EnumType, jsonToGraphQLQuery } from 'json-to-graphql-query';
 import { Context } from './context';
 import {
   Maybe,
+  MergeableState,
   PullRequest,
   PullRequestState,
   Repository,
 } from './generated/graphql';
 import { octokit } from './octokit';
-import { notEmpty } from './utils';
+import { notEmpty, sleep } from './utils';
 
 export const getPullRequests = async (
   cursor?: Maybe<string>,
@@ -68,3 +69,25 @@ export const getPullRequests = async (
 
   return results;
 };
+
+export const tryGetPullRequests = async (
+  attempts: number = Context.attempts,
+  sleepMs: number = Context.sleepMs,
+): Promise<PullRequest[]> => {
+  let pullRequests: PullRequest[] = [];
+  for (let attempt = 1; attempt <= attempts; ++attempt) {
+    pullRequests = await getPullRequests();
+    const hasUnknowns = pullRequests.some((pr) => isPullRequestBad(pr));
+
+    if (!hasUnknowns) {
+      break;
+    }
+
+    await sleep(sleepMs);
+  }
+
+  return pullRequests.filter((pr) => !isPullRequestBad(pr));
+};
+
+const isPullRequestBad = ({ mergeable }: PullRequest): boolean =>
+  mergeable === MergeableState.Unknown;

@@ -2,10 +2,17 @@ name: 'Merge Conflict Commenter'
 description: 'Automatically post a comment on PRs that have merge conflicts'
 author: 'invakid404'
 inputs:
+  attempts:
+    required: false
+    description: 'Amount of attempts to fetch pull request statuses'
+    default: '5'
+  sleepMs:
+    required: false
+    description: 'Amount of milliseconds to sleep between attempts'
+    default: '5000'
   message:
     required: true
     description: 'Message to comment'
-    default: 'This PR has merge conflicts!'
 runs:
   using: 'node12'
   main: 'dist/index.js'

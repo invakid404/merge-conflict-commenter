@@ -1,24 +1,20 @@
 import * as core from '@actions/core';
 
-import { getPullRequests } from './prs';
-import { notEmpty, sleep } from './utils';
+import { tryGetPullRequests } from './prs';
+import { notEmpty } from './utils';
 
 async function run(): Promise<void> {
   try {
-    for (let i = 0; i < 5; ++i) {
-      const pullRequests = await getPullRequests();
+    const pullRequests = await tryGetPullRequests();
 
-      pullRequests.forEach(({ number, mergeable, labels }) => {
-        const labelInfo = labels?.nodes
-          ?.filter(notEmpty)
-          .map(({ name }) => name)
-          .join(' ');
+    pullRequests.forEach(({ number, mergeable, labels }) => {
+      const labelInfo = labels?.nodes
+        ?.filter(notEmpty)
+        .map(({ name }) => name)
+        .join(' ');
 
-        core.info(`${number} (${labelInfo}) -> ${mergeable}`);
-      });
-
-      await sleep(1000);
-    }
+      core.info(`${number} (${labelInfo}) -> ${mergeable}`);
+    });
   } catch (error) {
     core.setFailed(error.message);
   }
