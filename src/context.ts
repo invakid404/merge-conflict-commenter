@@ -6,4 +6,5 @@ export const Context = {
   repo: github.context.repo,
   attempts: Number(core.getInput('attempts')),
   sleepMs: Number(core.getInput('sleepMs')),
+  dirtyLabel: core.getInput('dirtyLabel', { required: true }),
 };

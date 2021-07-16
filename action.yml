@@ -10,6 +10,9 @@ inputs:
     required: false
     description: 'Amount of milliseconds to sleep between attempts'
     default: '5000'
+  dirtyLabel:
+    required: true
+    description: 'Label to mark pull requests as dirty'
   message:
     required: true
     description: 'Message to comment'

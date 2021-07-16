@@ -91,3 +91,10 @@ export const tryGetPullRequests = async (
 
 const isPullRequestBad = ({ mergeable }: PullRequest): boolean =>
   mergeable === MergeableState.Unknown;
+
+export const isPullRequestDirty = ({ mergeable }: PullRequest): boolean =>
+  mergeable === MergeableState.Conflicting;
+
+export const hasLabel = ({ labels }: PullRequest, labelName: string): boolean =>
+  labels?.nodes?.filter(notEmpty).some(({ name }) => name === labelName) ??
+  false;

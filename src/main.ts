@@ -1,20 +1,26 @@
 import * as core from '@actions/core';
+import { partition } from 'lodash';
 
-import { tryGetPullRequests } from './prs';
-import { notEmpty } from './utils';
+import { Context } from './context';
+import { addLabelByName } from './labels';
+import { hasLabel, isPullRequestDirty, tryGetPullRequests } from './prs';
 
 async function run(): Promise<void> {
   try {
     const pullRequests = await tryGetPullRequests();
 
-    pullRequests.forEach(({ number, mergeable, labels }) => {
-      const labelInfo = labels?.nodes
-        ?.filter(notEmpty)
-        .map(({ name }) => name)
-        .join(' ');
+    const [dirtyPullRequests, _cleanPullRequests] = partition(
+      pullRequests,
+      isPullRequestDirty,
+    );
 
-      core.info(`${number} (${labelInfo}) -> ${mergeable}`);
-    });
+    await Promise.all(
+      dirtyPullRequests
+        .filter((pr) => !hasLabel(pr, Context.dirtyLabel))
+        .map(async (pr) => {
+          await addLabelByName(pr, Context.dirtyLabel);
+        }),
+    );
   } catch (error) {
     core.setFailed(error.message);
   }
