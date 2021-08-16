@@ -51,6 +51,7 @@
     "@typescript-eslint/restrict-plus-operands": "error",
     "@typescript-eslint/type-annotation-spacing": "error",
     "@typescript-eslint/unbound-method": "error",
+    "sort-imports": "off",
     "simple-import-sort/imports": "error",
     "simple-import-sort/exports": "error",
     "github/array-foreach": "off"
