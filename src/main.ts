@@ -6,7 +6,7 @@ import { Context } from './context';
 import { addLabelByName, removeLabelByName } from './labels';
 import { hasLabel, isPullRequestDirty, tryGetPullRequests } from './prs';
 
-async function run(): Promise<void> {
+(async () => {
   try {
     const pullRequests = await tryGetPullRequests();
 
@@ -34,6 +34,4 @@ async function run(): Promise<void> {
   } catch (error) {
     core.setFailed(String(error));
   }
-}
-
-run();
+})();
