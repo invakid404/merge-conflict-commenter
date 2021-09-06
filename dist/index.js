@@ -25,7 +25,7 @@ const addComment = async ({ id }, body = context_1.Context.message) => {
             },
         },
     };
-    await octokit_1.octokit(json_to_graphql_query_1.jsonToGraphQLQuery(request));
+    await (0, octokit_1.octokit)((0, json_to_graphql_query_1.jsonToGraphQLQuery)(request));
 };
 exports.addComment = addComment;
 
@@ -907,6 +907,8 @@ var OrganizationMembersCanCreateRepositoriesSettingValue;
     OrganizationMembersCanCreateRepositoriesSettingValue["All"] = "ALL";
     /** Members will be able to create only private repositories. */
     OrganizationMembersCanCreateRepositoriesSettingValue["Private"] = "PRIVATE";
+    /** Members will be able to create only internal repositories. */
+    OrganizationMembersCanCreateRepositoriesSettingValue["Internal"] = "INTERNAL";
     /** Members will not be able to create public or private repositories. */
     OrganizationMembersCanCreateRepositoriesSettingValue["Disabled"] = "DISABLED";
 })(OrganizationMembersCanCreateRepositoriesSettingValue = exports.OrganizationMembersCanCreateRepositoriesSettingValue || (exports.OrganizationMembersCanCreateRepositoriesSettingValue = {}));
@@ -1583,8 +1585,6 @@ var SecurityAdvisoryEcosystem;
     SecurityAdvisoryEcosystem["Pip"] = "PIP";
     /** Ruby gems hosted at RubyGems.org */
     SecurityAdvisoryEcosystem["Rubygems"] = "RUBYGEMS";
-    /** Applications, runtimes, operating systems and other kinds of software */
-    SecurityAdvisoryEcosystem["Other"] = "OTHER";
 })(SecurityAdvisoryEcosystem = exports.SecurityAdvisoryEcosystem || (exports.SecurityAdvisoryEcosystem = {}));
 /** Identifier formats available for advisories. */
 var SecurityAdvisoryIdentifierType;
@@ -1673,7 +1673,7 @@ var SponsorsGoalKind;
 (function (SponsorsGoalKind) {
     /** The goal is about reaching a certain number of sponsors. */
     SponsorsGoalKind["TotalSponsorsCount"] = "TOTAL_SPONSORS_COUNT";
-    /** The goal is about getting a certain dollar amount from sponsorships each month. */
+    /** The goal is about getting a certain amount in USD from sponsorships each month. */
     SponsorsGoalKind["MonthlySponsorshipAmount"] = "MONTHLY_SPONSORSHIP_AMOUNT";
 })(SponsorsGoalKind = exports.SponsorsGoalKind || (exports.SponsorsGoalKind = {}));
 /** Properties by which Sponsors tiers connections can be ordered. */
@@ -1887,7 +1887,7 @@ const getAllLabelsByName = async (labelName) => {
             },
         },
     };
-    const { repository: { labels }, } = await octokit_1.octokit(json_to_graphql_query_1.jsonToGraphQLQuery(request));
+    const { repository: { labels }, } = await (0, octokit_1.octokit)((0, json_to_graphql_query_1.jsonToGraphQLQuery)(request));
     return (_b = (_a = labels === null || labels === void 0 ? void 0 : labels.nodes) === null || _a === void 0 ? void 0 : _a.filter(utils_1.notEmpty)) !== null && _b !== void 0 ? _b : [];
 };
 exports.getAllLabelsByName = getAllLabelsByName;
@@ -1896,16 +1896,16 @@ const getLabelByName = async (labelName) => {
     if (cachedLabels.hasOwnProperty(labelName)) {
         return cachedLabels[labelName];
     }
-    const allLabels = await exports.getAllLabelsByName(labelName);
+    const allLabels = await (0, exports.getAllLabelsByName)(labelName);
     return (cachedLabels[labelName] = allLabels.find(({ name }) => name === labelName));
 };
 exports.getLabelByName = getLabelByName;
 const addLabelByName = async (target, labelName) => {
-    const label = await exports.getLabelByName(labelName);
+    const label = await (0, exports.getLabelByName)(labelName);
     if (!label) {
         return;
     }
-    await exports.addLabel(target, label);
+    await (0, exports.addLabel)(target, label);
 };
 exports.addLabelByName = addLabelByName;
 const addLabel = async (target, label) => {
@@ -1913,11 +1913,11 @@ const addLabel = async (target, label) => {
 };
 exports.addLabel = addLabel;
 const removeLabelByName = async (target, labelName) => {
-    const label = await exports.getLabelByName(labelName);
+    const label = await (0, exports.getLabelByName)(labelName);
     if (!label) {
         return;
     }
-    await exports.removeLabel(target, label);
+    await (0, exports.removeLabel)(target, label);
 };
 exports.removeLabelByName = removeLabelByName;
 const removeLabel = async (target, label) => {
@@ -1938,7 +1938,7 @@ const doLabelMutation = async (target, label, mutationType) => {
             },
         },
     };
-    await octokit_1.octokit(json_to_graphql_query_1.jsonToGraphQLQuery(request));
+    await (0, octokit_1.octokit)((0, json_to_graphql_query_1.jsonToGraphQLQuery)(request));
 };
 
 
@@ -1975,27 +1975,26 @@ const comments_1 = __nccwpck_require__(1910);
 const context_1 = __nccwpck_require__(3842);
 const labels_1 = __nccwpck_require__(3579);
 const prs_1 = __nccwpck_require__(8941);
-async function run() {
+(async () => {
     try {
-        const pullRequests = await prs_1.tryGetPullRequests();
-        const [dirtyPullRequests, cleanPullRequests] = lodash_1.partition(pullRequests, prs_1.isPullRequestDirty);
+        const pullRequests = await (0, prs_1.tryGetPullRequests)();
+        const [dirtyPullRequests, cleanPullRequests] = (0, lodash_1.partition)(pullRequests, prs_1.isPullRequestDirty);
         await Promise.all(dirtyPullRequests
-            .filter((pr) => !prs_1.hasLabel(pr, context_1.Context.dirtyLabel))
+            .filter((pr) => !(0, prs_1.hasLabel)(pr, context_1.Context.dirtyLabel))
             .map(async (pr) => {
-            await labels_1.addLabelByName(pr, context_1.Context.dirtyLabel);
-            await comments_1.addComment(pr);
+            await (0, labels_1.addLabelByName)(pr, context_1.Context.dirtyLabel);
+            await (0, comments_1.addComment)(pr);
         }));
         await Promise.all(cleanPullRequests
-            .filter((pr) => prs_1.hasLabel(pr, context_1.Context.dirtyLabel))
+            .filter((pr) => (0, prs_1.hasLabel)(pr, context_1.Context.dirtyLabel))
             .map(async (pr) => {
-            await labels_1.removeLabelByName(pr, context_1.Context.dirtyLabel);
+            await (0, labels_1.removeLabelByName)(pr, context_1.Context.dirtyLabel);
         }));
     }
     catch (error) {
-        core.setFailed(error.message);
+        core.setFailed(String(error));
     }
-}
-run();
+})();
 
 
 /***/ }),
@@ -2067,10 +2066,10 @@ const getPullRequests = async (cursor) => {
             },
         },
     };
-    const { repository: { pullRequests: { nodes, pageInfo: { hasNextPage, endCursor }, }, }, } = await octokit_1.octokit(json_to_graphql_query_1.jsonToGraphQLQuery(request));
+    const { repository: { pullRequests: { nodes, pageInfo: { hasNextPage, endCursor }, }, }, } = await (0, octokit_1.octokit)((0, json_to_graphql_query_1.jsonToGraphQLQuery)(request));
     const results = (_a = nodes === null || nodes === void 0 ? void 0 : nodes.filter(utils_1.notEmpty)) !== null && _a !== void 0 ? _a : [];
     if (hasNextPage) {
-        const recurse = await exports.getPullRequests(endCursor);
+        const recurse = await (0, exports.getPullRequests)(endCursor);
         results.push(...recurse);
     }
     return results;
@@ -2079,12 +2078,12 @@ exports.getPullRequests = getPullRequests;
 const tryGetPullRequests = async (attempts = context_1.Context.attempts, sleepMs = context_1.Context.sleepMs) => {
     let pullRequests = [];
     for (let attempt = 1; attempt <= attempts; ++attempt) {
-        pullRequests = await exports.getPullRequests();
+        pullRequests = await (0, exports.getPullRequests)();
         const hasUnknowns = pullRequests.some((pr) => isPullRequestBad(pr));
         if (!hasUnknowns) {
             break;
         }
-        await utils_1.sleep(sleepMs);
+        await (0, utils_1.sleep)(sleepMs);
     }
     return pullRequests.filter((pr) => !isPullRequestBad(pr));
 };
@@ -2251,7 +2250,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getState = exports.saveState = exports.group = exports.endGroup = exports.startGroup = exports.info = exports.warning = exports.error = exports.debug = exports.isDebug = exports.setFailed = exports.setCommandEcho = exports.setOutput = exports.getBooleanInput = exports.getMultilineInput = exports.getInput = exports.addPath = exports.setSecret = exports.exportVariable = exports.ExitCode = void 0;
+exports.getState = exports.saveState = exports.group = exports.endGroup = exports.startGroup = exports.info = exports.notice = exports.warning = exports.error = exports.debug = exports.isDebug = exports.setFailed = exports.setCommandEcho = exports.setOutput = exports.getBooleanInput = exports.getMultilineInput = exports.getInput = exports.addPath = exports.setSecret = exports.exportVariable = exports.ExitCode = void 0;
 const command_1 = __nccwpck_require__(7351);
 const file_command_1 = __nccwpck_require__(717);
 const utils_1 = __nccwpck_require__(5278);
@@ -2429,19 +2428,30 @@ exports.debug = debug;
 /**
  * Adds an error issue
  * @param message error issue message. Errors will be converted to string via toString()
+ * @param properties optional properties to add to the annotation.
  */
-function error(message) {
-    command_1.issue('error', message instanceof Error ? message.toString() : message);
+function error(message, properties = {}) {
+    command_1.issueCommand('error', utils_1.toCommandProperties(properties), message instanceof Error ? message.toString() : message);
 }
 exports.error = error;
 /**
- * Adds an warning issue
+ * Adds a warning issue
  * @param message warning issue message. Errors will be converted to string via toString()
+ * @param properties optional properties to add to the annotation.
  */
-function warning(message) {
-    command_1.issue('warning', message instanceof Error ? message.toString() : message);
+function warning(message, properties = {}) {
+    command_1.issueCommand('warning', utils_1.toCommandProperties(properties), message instanceof Error ? message.toString() : message);
 }
 exports.warning = warning;
+/**
+ * Adds a notice issue
+ * @param message notice issue message. Errors will be converted to string via toString()
+ * @param properties optional properties to add to the annotation.
+ */
+function notice(message, properties = {}) {
+    command_1.issueCommand('notice', utils_1.toCommandProperties(properties), message instanceof Error ? message.toString() : message);
+}
+exports.notice = notice;
 /**
  * Writes info to log with console.log.
  * @param message info message
@@ -2575,7 +2585,7 @@ exports.issueCommand = issueCommand;
 // We use any as a valid input type
 /* eslint-disable @typescript-eslint/no-explicit-any */
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.toCommandValue = void 0;
+exports.toCommandProperties = exports.toCommandValue = void 0;
 /**
  * Sanitizes an input into a string so it can be passed into issueCommand safely
  * @param input input to sanitize into a string
@@ -2590,6 +2600,25 @@ function toCommandValue(input) {
     return JSON.stringify(input);
 }
 exports.toCommandValue = toCommandValue;
+/**
+ *
+ * @param annotationProperties
+ * @returns The command properties to send with the actual annotation command
+ * See IssueCommandProperties: https://github.com/actions/runner/blob/main/src/Runner.Worker/ActionCommandManager.cs#L646
+ */
+function toCommandProperties(annotationProperties) {
+    if (!Object.keys(annotationProperties).length) {
+        return {};
+    }
+    return {
+        title: annotationProperties.title,
+        line: annotationProperties.startLine,
+        endLine: annotationProperties.endLine,
+        col: annotationProperties.startColumn,
+        endColumn: annotationProperties.endColumn
+    };
+}
+exports.toCommandProperties = toCommandProperties;
 //# sourceMappingURL=utils.js.map
 
 /***/ }),
@@ -4069,18 +4098,22 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 var request = __nccwpck_require__(6234);
 var universalUserAgent = __nccwpck_require__(5030);
 
-const VERSION = "4.6.4";
+const VERSION = "4.8.0";
 
-class GraphqlError extends Error {
-  constructor(request, response) {
-    const message = response.data.errors[0].message;
-    super(message);
-    Object.assign(this, response.data);
-    Object.assign(this, {
-      headers: response.headers
-    });
-    this.name = "GraphqlError";
-    this.request = request; // Maintains proper stack trace (only available on V8)
+function _buildMessageForResponseErrors(data) {
+  return `Request failed due to following response errors:\n` + data.errors.map(e => ` - ${e.message}`).join("\n");
+}
+
+class GraphqlResponseError extends Error {
+  constructor(request, headers, response) {
+    super(_buildMessageForResponseErrors(response));
+    this.request = request;
+    this.headers = headers;
+    this.response = response;
+    this.name = "GraphqlResponseError"; // Expose the errors and response data in their shorthand properties.
+
+    this.errors = response.errors;
+    this.data = response.data; // Maintains proper stack trace (only available on V8)
 
     /* istanbul ignore next */
 
@@ -4138,10 +4171,7 @@ function graphql(request, query, options) {
         headers[key] = response.headers[key];
       }
 
-      throw new GraphqlError(requestOptions, {
-        headers,
-        data: response.data
-      });
+      throw new GraphqlResponseError(requestOptions, headers, response.data);
     }
 
     return response.data.data;
@@ -4175,6 +4205,7 @@ function withCustomRequest(customRequest) {
   });
 }
 
+exports.GraphqlResponseError = GraphqlResponseError;
 exports.graphql = graphql$1;
 exports.withCustomRequest = withCustomRequest;
 //# sourceMappingURL=index.js.map
