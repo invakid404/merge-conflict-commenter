@@ -40,7 +40,7 @@
     "@octokit/graphql-schema": "^10.71.0",
     "@types/lodash": "^4.14.173",
     "@types/node": "^16.9.6",
-    "@typescript-eslint/parser": "^4.31.0",
+    "@typescript-eslint/parser": "^4.31.2",
     "@vercel/ncc": "^0.31.1",
     "eslint": "^7.32.0",
     "eslint-plugin-github": "^4.3.0",
