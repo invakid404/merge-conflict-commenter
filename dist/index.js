@@ -1585,6 +1585,8 @@ var SecurityAdvisoryEcosystem;
     SecurityAdvisoryEcosystem["Pip"] = "PIP";
     /** Ruby gems hosted at RubyGems.org */
     SecurityAdvisoryEcosystem["Rubygems"] = "RUBYGEMS";
+    /** Rust crates */
+    SecurityAdvisoryEcosystem["Rust"] = "RUST";
 })(SecurityAdvisoryEcosystem = exports.SecurityAdvisoryEcosystem || (exports.SecurityAdvisoryEcosystem = {}));
 /** Identifier formats available for advisories. */
 var SecurityAdvisoryIdentifierType;
